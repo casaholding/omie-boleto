@@ -1,3 +1,0 @@
-<component name="DependencyValidationManager">
-  <scope name="Portal" pattern="file:*.md||file:*.d.ts||file:*.toml" />
-</component>
