@@ -1,41 +1,29 @@
-# WA - Tutorial
+# Flower
 
-## Configuração Inicial:
+Conteúdo que vai orquestrar os serviços genericos da Casa das Idéias.
+
+## Configurar o ambiente de desenvolvimento:
 - Node 18
 - NPM
 
-# Variáveis de; 
-
-- Ambiente
-- Cloudflare
-
-### Adicionar abaixo:
-
+## Variáveis de ambiente:
 ```ts
 interface Env {
 
 }
 ```
 
-# Flower
+# Notas:
+
+- Ignorar
+
+---
 
 - Fluxo / Follow / Follower / Following / PERT / Gantt
 - Métodológia para detectar qualidade de um processo.
 - Cloudflare Workers
 
-## Instalação:
-- Node 18
-- NPM
-
-```bash
-nvm use 18
-npm ci
-npm run pack
-```
-
-### TODO
 - Documentos e "quickstart"
-- Só importar scripts ts/typescript
 - Gerar um PDF com a documentação
 - Documentação navegável
 - Importar outros repositórios se possivel
@@ -62,5 +50,3 @@ https://github.com/serverless/serverless#quick-start
 - Garantia
 - Review Audit
 - Drools / Serverless
-
-
