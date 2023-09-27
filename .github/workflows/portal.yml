@@ -16,8 +16,6 @@ jobs:
       - run: cd react && yarn install && cd ..
       - name: Build react
         run: cd react && yarn build && cd ..
-      - name: Build
-        run: npm run build
       - name: Deploy
         run: npm run deploy
         env:
