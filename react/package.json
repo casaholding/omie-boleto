@@ -1,0 +1,36 @@
+{
+  "name": "portal",
+  "version": "0.1.0",
+  "description": "Portal Casa das Idéias",
+  "private": true,
+  "scripts": {
+    "react": "react-scripts start",
+    "build": "react-scripts build"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "dependencies": {
+    "moment-timezone": "0.5.43",
+    "pdf-lib": "1.17.1",
+    "react": "18.2.x",
+    "react-dom": "18.2.x"
+  },
+  "devDependencies": {
+    "@types/react": "18.2.x",
+    "react-scripts": "5.0.x",
+    "typescript": "5.0.x"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
