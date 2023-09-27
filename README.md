@@ -1,4 +1,4 @@
-# Flower
+# Portal
 
 Conteúdo que vai orquestrar os serviços genericos da Casa das Idéias.
 
@@ -14,11 +14,16 @@ interface Env {
 ```
 
 # Notas:
-
-- Ignorar
-
 ---
+## TODO:
 
+- Este projeto provavelmente/talvez ficará desorganizado!
+O projeto 'Flower' será feito de chassi!
+Os demais projetos **devem** ter somente arquivos '.MD'
+- [wrangler.toml - Verificar se vai deixar o endpoint de DEV.](wrangler.toml)
+- [Documentar Utils](src/Utils.md)
+
+## FLOWER
 - Fluxo / Follow / Follower / Following / PERT / Gantt
 - Métodológia para detectar qualidade de um processo.
 - Cloudflare Workers
