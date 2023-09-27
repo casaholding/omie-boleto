@@ -13,6 +13,7 @@ jobs:
           node-version: 18
           registry-url: https://registry.npmjs.org/
       - run: npm ci
+      - run: cd react && yarn install && yarn build && cd ..
       - run: npm run deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{secrets.CF_WORKER_TOKEN}}

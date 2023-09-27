@@ -1,10 +1,13 @@
 node_modules/
 dist/
+build/
 .wrangler/
-*.ts
-*.tsx
-*.js
+/*.ts
+/*.tsx
+/*.js
 !block-loader.js
 !main.js
 !webpack.config.js
+src/*.ts
+src/*.js
 

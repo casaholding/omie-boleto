@@ -6,6 +6,9 @@
         <entryData>
           <resourceRoots>
             <path value="file://$PROJECT_DIR$/src" />
+            <path value="file://$PROJECT_DIR$/react" />
+            <path value="file://$PROJECT_DIR$/react/public" />
+            <path value="file://$PROJECT_DIR$/react/src" />
           </resourceRoots>
         </entryData>
       </entry>
