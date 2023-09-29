@@ -8,6 +8,8 @@ Configurar o ambiente de desenvolvimento:
 - Node 18
 - NPM
 - [Build Cliente 1](.github/workflows/dili.yml)
+- [Dominio](wrangler.toml)
+
 
 ## Variáveis de ambiente:
 ```ts
