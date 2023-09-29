@@ -19,8 +19,8 @@ jobs:
         run: cd react && yarn build && cd ..
       - name: Deploy
         run: |
-          echo ${{secrets.DILI_KEY}}      | npx wrangler secret put OMIE_APP_KEY --name ${{vars.DILI_WWW}}
-          echo ${{secrets.DILI_SECRET}}    | npx wrangler secret put OMIE_APP_SECRET --name ${{vars.DILI_WWW}}
+          echo ${{secrets.DILI_KEY}}      | npx wrangler secret put OMIE_APP_KEY
+          echo ${{secrets.DILI_SECRET}}    | npx wrangler secret put OMIE_APP_SECRET
           npx wrangler deploy dili.toml
         env:
           CLOUDFLARE_API_TOKEN: ${{secrets.CF_TOKEN}}
