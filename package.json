@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "4.20230419.x",
+    "moment-timezone": "0.5.43",
     "file-loader": "6.2.x",
     "remark-loader": "5.0.x",
     "ts-loader": "9.4.x",
