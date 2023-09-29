@@ -16,7 +16,9 @@ export default function Boleto() {
                             </ol>
                         </nav>
 
+                        <div>
                     <Documentos/>
+                        </div>
 
                     </div>
                 </div>
