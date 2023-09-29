@@ -21,6 +21,6 @@ jobs:
         run: |
           echo ${{secrets.DILI_KEY}}      | npx wrangler secret put OMIE_APP_KEY --name ${{vars.DILI_WWW}}
           echo ${{secrets.DILI_SECRET}}    | npx wrangler secret put OMIE_APP_SECRET --name ${{vars.DILI_WWW}}
-          npx wrangler deploy --name ${{vars.DILI_WWW}} --routes [{ pattern = "${{vars.DILI_WWW}}.ideias.casa", custom_domain = true }]
+          npx wrangler deploy --name ${{vars.DILI_WWW}} --routes ${{vars.DILI_WWW}}.ideias.casa
         env:
           CLOUDFLARE_API_TOKEN: ${{secrets.CF_TOKEN}}
