@@ -65,7 +65,7 @@ export default function Documentos() {
 			setPDFURI('');
 
 			const pdfDoc = await PDFDocument.create();
-			const numDocs = boletos.length;
+			//const numDocs = boletos.length;
 
 			for (const conta of boletos) {
 				if (conta.cCodigoBarras) {

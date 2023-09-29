@@ -11,13 +11,14 @@ export default function Boleto() {
 
                         <nav aria-label="breadcrumb">
                             <ol className="breadcrumb">
-                                <li className="breadcrumb-item"><a href="https://ideias.cloudflareaccess.com/">Apps</a></li>
+                                <li className="breadcrumb-item"><a href="https://ideias.cloudflareaccess.com/">Apps</a>
+                                </li>
                                 <li className="breadcrumb-item active" aria-current="page">Boletos</li>
                             </ol>
                         </nav>
 
                         <div>
-                    <Documentos/>
+                            <Documentos/>
                         </div>
 
                     </div>
