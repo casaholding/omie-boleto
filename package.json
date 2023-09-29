@@ -1,10 +1,8 @@
 {
-  "name": "portal",
+  "name": "omie-boleto",
   "version": "0.0.1",
-  "private": true,
   "scripts": {
     "pack": "webpack --progress",
-    "deploy": "wrangler deploy",
     "dev": "wrangler dev",
     "log": "wrangler tail"
   },

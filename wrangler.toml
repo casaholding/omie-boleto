@@ -1,22 +1,10 @@
-name = "portal"
 main = "dist/src/index.ts"
 compatibility_date = "2023-09-14"
-workers_dev = true
-account_id = "4f296275a5fa3d5c36343151790e96d3"
+workers_dev = false
 usage_model = "bundled"
-
-routes = [
-    { pattern = "portal.ideias.casa", custom_domain = true }
-]
 
 [site]
 bucket = "./react/build"
 
 [build]
 command = "npx webpack --progress"
-
-# Bind another Worker service. Use this binding to call another Worker without network overhead.
-# Docs: https://developers.cloudflare.com/workers/platform/services
-# [[services]]
-# binding = "MY_SERVICE"
-# service = "/api/*"
