@@ -125,7 +125,7 @@ export default function Documentos() {
 
 			{!pdfuri ? '':
 				<label>
-					<a href={pdfuri} target='_blank'>Download</a>
+					<a href={pdfuri} target='_blank' rel="noreferrer">Download</a>
 				</label>
 			}
 			<div className='mx-auto p-2' />
