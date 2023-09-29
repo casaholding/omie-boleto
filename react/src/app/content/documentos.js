@@ -153,7 +153,7 @@ export default function Documentos() {
 											<td>{item.cNumTitulo}</td>
 											<td>
 												{item.cCodigoBarras ?
-													<a href={'urlboleto/' + item.nCodTitulo} target='_blank'
+													<a href={'/api/urlboleto/' + item.nCodTitulo} target='_blank'
 													   rel='noreferrer'>{item.cNumParcela}</a>
 													: 'N/A'}
 											</td>
