@@ -110,7 +110,7 @@ export default function Documentos() {
 
                 {!pdfuri ? '' :
                     <label>
-                        <a rel='noreferrer' target="_blank" href={pdfuri}>Download</a>
+                        <a download="Lote.pdf" href={pdfuri}>Download</a>
                     </label>
                 }
             </div>
