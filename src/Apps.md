@@ -3,8 +3,6 @@
 - Imports: Dependencias do projeto.
 - moment é para formatar datas, porque usa o calendário html5 no frontend.
 - _async fluxo()_ é o método principal, que é chamado pelo servidor.
-- usar cache para PDF - https://developers.cloudflare.com/workers/examples/cache-api/
-- documentar melhor esse arquivo
 
 ```typescript
 import {includes, JSON_HEADER, NOT_FOUND, readRequestBody} from './Utils';
@@ -25,10 +23,10 @@ export class Apps {
 
     async fluxo() {
         try {
-            this.data = await readRequestBody(this.request);
+            let data = await readRequestBody(this.request);
 
             if (includes(this.request.url, '/listaboletos')) {
-                let resposta = await this.listaDeBoleto();
+                let resposta = await listaDeBoleto(data,this.env);
 
                 return new Response(
                     JSON.stringify(resposta),
@@ -37,20 +35,111 @@ export class Apps {
                         status: 200,
                     },
                 );
+
             } else if (includes(this.request.url, '/urlboleto')) {
-                return await this.urlBoleto(this.request.url.split('/').pop());
-            } else {
-                return NOT_FOUND;
+                return await urlBoleto(this.request.url.split('/').pop());
             }
 
         } catch (e) {
             console.error('Omie App', e, e.stack);
+            return new Response('Erro', {status: 500});
         }
-        return new Response('Erro', {status: 500});
+        return NOT_FOUND();
     }
+}
+```
 
-    async urlBoleto(codigo: string) {
-        return Response.redirect(
+# Listagem dos boletos
+
+```typescript
+
+export async function listaDeBoleto() {
+    let resposta = [];
+
+    try {
+        let retornoOmie = await fetch(
+            'https://app.omie.com.br/api/v1/financas/pesquisartitulos/',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    'call': 'PesquisarLancamentos',
+                    'app_key': env.OMIE_APP_KEY,
+                    'app_secret': env.OMIE_APP_SECRET,
+                    'param': [
+                        {
+                            'dDtIncDe': moment(this.data['datade'], 'YYYY-MM-DD').format('DD/MM/YYYY'),
+                            'dDtIncAte': moment(this.data['dataate'], 'YYYY-MM-DD').format('DD/MM/YYYY'),
+                            'cNatureza': 'R',
+                            'cTipo': 'BOL',
+                            //'cStatus': 'AVENCER',
+                            'nRegPorPagina': 200,
+                        },
+                    ],
+                }),
+            },
+        );
+        resposta = (await retornoOmie.json());
+
+        if (!resposta['titulosEncontrados']) {
+            return [];
+        }
+
+        let boletos = [];
+        for (let i = 0; i < resposta['titulosEncontrados'].length; i++) {
+            boletos.push(await this.dtoBoleto(resposta['titulosEncontrados'][i]['cabecTitulo']));
+        }
+        resposta = boletos;
+
+        resposta = resposta.sort(this.sorter);
+
+    } catch (e) {
+        console.error('Erro ao listar contas a receber', e, e.stack);
+    }
+    return resposta;
+}
+```
+
+# Ordenação dos boletos
+
+```typescript
+
+export function stringToSort(entity: any): string {
+    return entity.cNumTitulo + '-' + entity.cNumParcela;
+}
+
+export function sorter(a: any, b: any): number {
+    return this.stringToSort(a).localeCompare(this.stringToSort(b));
+}
+
+export function dtoBoleto(titulo: any) {
+    return {
+        'cCPFCNPJCliente': titulo.cCPFCNPJCliente,
+        'nCodTitulo': titulo.nCodTitulo,
+        'cNumTitulo': titulo.cNumTitulo ? titulo.cNumTitulo :
+            titulo.cNumOS ? titulo.cNumOS :
+                titulo.cNumDocFiscal ? titulo.cNumDocFiscal :
+                    titulo.nCodTitulo
+        ,
+        'cNumParcela': titulo.cNumParcela,
+        'nValorTitulo': titulo.nValorTitulo,
+        'cCodigoBarras': titulo.cCodigoBarras,
+    };
+}
+
+```
+
+# Responder com o binario do Boleto em PDF
+
+-- usar cache para PDF - https://developers.cloudflare.com/workers/examples/cache-api/
+
+```typescript
+export async function urlBoleto(codigo: string) {
+    return new Response(
+        await (await fetch(
             (await (await fetch(
                 'https://app.omie.com.br/api/v1/financas/pesquisartitulos/',
                 {
@@ -61,8 +150,8 @@ export class Apps {
                     },
                     body: JSON.stringify({
                         'call': 'ObterURLBoleto',
-                        'app_key': this.env.OMIE_APP_KEY,
-                        'app_secret': this.env.OMIE_APP_SECRET,
+                        'app_key': env.OMIE_APP_KEY,
+                        'app_secret': env.OMIE_APP_SECRET,
                         'param': [
                             {
                                 'nCodTitulo': `${codigo}`,
@@ -71,109 +160,10 @@ export class Apps {
                     }),
                 },
             )).json())['cLinkBoleto']
-            , 301);
-
-        // if (!titulo.cCodigoBarras || titulo.cCodigoBarras.trim().length < 10) {
-        // 	titulo.cCodigoBarras = titulo.nCodCliente;
-        // try {
-        // 	titulo.cCodigoBarras = (await (await fetch(
-        // 		'https://app.omie.com.br/api/v1/financas/contareceberboleto/',
-        // 		{
-        // 			method: 'POST',
-        // 			headers: {
-        // 				'Content-Type': 'application/json',
-        // 				'Accept': 'application/json',
-        // 			},
-        // 			body: JSON.stringify({
-        // 				'call': 'ObterBoleto',
-        // 				'app_key': this.env.OMIE_APP_KEY,
-        // 				'app_secret': this.env.OMIE_APP_SECRET,
-        // 				'param': [
-        // 					{
-        // 						'nCodTitulo': titulo.nCodTitulo * 1,
-        // 					},
-        // 				],
-        // 			}),
-        // 		},
-        // 	)).text());
-        // } catch (e) {
-        // }
-        // titulo.cCodigoBarras = titulo.cCodigoBarras + '';
-        // }
-
+        )).blob(),
+        {
+        status: 200
     }
-
-    async listaDeBoleto() {
-        let resposta = [];
-
-        try {
-            let retornoOmie = await fetch(
-                'https://app.omie.com.br/api/v1/financas/pesquisartitulos/',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        'call': 'PesquisarLancamentos',
-                        'app_key': this.env.OMIE_APP_KEY,
-                        'app_secret': this.env.OMIE_APP_SECRET,
-                        'param': [
-                            {
-                                'dDtIncDe': moment(this.data['datade'], 'YYYY-MM-DD').format('DD/MM/YYYY'),
-                                'dDtIncAte': moment(this.data['dataate'], 'YYYY-MM-DD').format('DD/MM/YYYY'),
-                                'cNatureza': 'R',
-                                'cTipo': 'BOL',
-                                //'cStatus': 'AVENCER',
-                                'nRegPorPagina': 200,
-                            },
-                        ],
-                    }),
-                },
-            );
-            resposta = (await retornoOmie.json());
-
-            if (!resposta['titulosEncontrados']) {
-                return [];
-            }
-
-            let boletos = [];
-            for (let i = 0; i < resposta['titulosEncontrados'].length; i++) {
-                boletos.push(await this.dtoBoleto(resposta['titulosEncontrados'][i]['cabecTitulo']));
-            }
-            resposta = boletos;
-
-            resposta = resposta.sort(this.sorter);
-
-
-        } catch (e) {
-            console.error('Erro ao listar contas a receber', e, e.stack);
-        }
-        return resposta;
-    }
-
-    stringToSort(entity: any): string {
-        return entity.cNumTitulo + '-' + entity.cNumParcela;
-    }
-
-    sorter(a: any, b: any): number {
-        return this.stringToSort(a).localeCompare(this.stringToSort(b));
-    }
-
-    dtoBoleto(titulo: any) {
-        return {
-            'cCPFCNPJCliente': titulo.cCPFCNPJCliente,
-            'nCodTitulo': titulo.nCodTitulo,
-            'cNumTitulo': titulo.cNumTitulo ? titulo.cNumTitulo :
-                titulo.cNumOS ? titulo.cNumOS :
-                    titulo.cNumDocFiscal ? titulo.cNumDocFiscal :
-                        titulo.nCodTitulo
-            ,
-            'cNumParcela': titulo.cNumParcela,
-            'nValorTitulo': titulo.nValorTitulo,
-            'cCodigoBarras': titulo.cCodigoBarras,
-        };
-    }
+)
 }
 ```
