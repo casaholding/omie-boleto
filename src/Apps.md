@@ -3,6 +3,8 @@
 - Imports: Dependencias do projeto.
 - moment é para formatar datas, porque usa o calendário html5 no frontend.
 - _async fluxo()_ é o método principal, que é chamado pelo servidor.
+- usar cache para PDF - https://developers.cloudflare.com/workers/examples/cache-api/
+- documentar melhor esse arquivo
 
 ```typescript
 import {includes, JSON_HEADER, NOT_FOUND, readRequestBody} from './Utils';
