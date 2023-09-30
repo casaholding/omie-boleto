@@ -53,7 +53,7 @@ export class Apps {
 
 ```typescript
 
-export async function listaDeBoleto(env : Env) {
+export async function listaDeBoleto(data:any, env : Env) {
     let resposta = [];
 
     try {
