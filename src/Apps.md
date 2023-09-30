@@ -26,7 +26,7 @@ export class Apps {
             let data = await readRequestBody(this.request);
 
             if (includes(this.request.url, '/listaboletos')) {
-                let resposta = await listaDeBoleto(data,this.env);
+                let resposta = await listaDeBoleto(this.env,data);
 
                 return new Response(
                     JSON.stringify(resposta),
@@ -36,8 +36,8 @@ export class Apps {
                     },
                 );
 
-            } else if (includes(request.url, '/urlboleto')) {
-                return await urlBoleto(request.url.split('/').pop());
+            } else if (includes(this.request.url, '/urlboleto')) {
+                return await urlBoleto(this.env,this.request.url.split('/').pop());
             }
 
         } catch (e) {
@@ -53,7 +53,7 @@ export class Apps {
 
 ```typescript
 
-export async function listaDeBoleto(data:any, env : Env) {
+export async function listaDeBoleto(env : Env,data:any) {
     let resposta = [];
 
     try {
@@ -137,7 +137,7 @@ export function dtoBoleto(titulo: any) {
 -- usar cache para PDF - https://developers.cloudflare.com/workers/examples/cache-api/
 
 ```typescript
-export async function urlBoleto(codigo: string) {
+export async function urlBoleto(env: Env, codigo: string) {
     return new Response(
         await (await fetch(
             (await (await fetch(
@@ -162,8 +162,8 @@ export async function urlBoleto(codigo: string) {
             )).json())['cLinkBoleto']
         )).blob(),
         {
-        status: 200
-    }
-)
+            status: 200
+        }
+    )
 }
 ```

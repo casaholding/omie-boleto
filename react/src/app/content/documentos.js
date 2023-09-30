@@ -1,175 +1,162 @@
-import { Fragment, useState } from 'react';
+import {Fragment, useState} from 'react';
 import moment from 'moment-timezone';
 import 'moment/locale/pt-br';
-import { PDFDocument } from 'pdf-lib';
+import {PDFDocument} from 'pdf-lib';
 
 export default function Documentos() {
 
-	const [boletos, setResposta] = useState([]);
-	const [datade, setDataDE] = useState(moment().format('YYYY-MM-DD'));
-	const [dataate, setDataATE] = useState(moment().format('YYYY-MM-DD'));
-	const [pdfuri, setPDFURI] = useState('');
-	const [loading, setLoading] = useState({
-		status: false,
-		message: 'Carregar!',
-	});
+    const [boletos, setResposta] = useState([]);
+    const [datade, setDataDE] = useState(moment().format('YYYY-MM-DD'));
+    const [dataate, setDataATE] = useState(moment().format('YYYY-MM-DD'));
+    const [pdfuri, setPDFURI] = useState('');
+    const [loading, setLoading] = useState(false);
 
-	function carregar() {
-		if (datade && dataate ) {
-			setLoading({
-				status: true,
-				message: 'Carregando...',
-			});
-			setResposta([]);
-			fetch(
-				'/api/listaboletos',
-				{
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					method: 'POST',
-					body: JSON.stringify({ datade, dataate }),
-				}).then(async response => {
+    function carregar() {
+        if (datade && dataate) {
+            setLoading(true);
+            setResposta([]);
+            setPDFURI('');
+            fetch(
+                '/api/listaboletos',
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    method: 'POST',
+                    body: JSON.stringify({datade, dataate}),
+                }).then(async response => {
 
-				setResposta(await response.json());
+                setResposta(await response.json());
 
-			}).catch(async error => {
+            }).catch(async error => {
 
-				setResposta([]);
+                setResposta([]);
 
-			}).finally(() => {
-				setLoading({
-					status: false,
-					message: 'Carregar!',
-				});
-			});
-		}
-	}
+            }).finally(() => {
+                setLoading(false);
+            });
+        }
+    }
 
-	function handleDataDE(e) {
-		setDataDE(e.target.value);
-		setDataATE(e.target.value);
-	}
+    function handleDataDE(e) {
+        setDataDE(e.target.value);
+        setDataATE(e.target.value);
+    }
 
-	function handleDataATE(e) {
-		setDataATE(e.target.value);
-	}
+    function handleDataATE(e) {
+        setDataATE(e.target.value);
+    }
 
-	async function mergeAllPDFs() {
+    async function mergeAllPDFs() {
 
-		try {
-			setLoading({
-				status: true,
-				message: 'Carregando...',
-			});
-			setPDFURI('');
+        try {
+            setLoading(true);
+            setPDFURI('');
 
-			const pdfDoc = await PDFDocument.create();
-			//const numDocs = boletos.length;
+            const pdfDoc = await PDFDocument.create();
 
-			for (const conta of boletos) {
-				if (conta.cCodigoBarras) {
-					const donorPdfBytes = (await fetch(
-						'/api/urlboleto/' + conta.nCodTitulo, {
-							redirect: 'manual',
-							mode: 'no-cors',
-						})).url;
-					console.log(donorPdfBytes);
+            for (const conta of boletos) {
+                if (conta.cCodigoBarras) {
+                    let url = '/api/urlboleto/' + conta.nCodTitulo;
+                    // const donorPdfBytes = (await fetch(
+                    // 	url)).arrayBuffer()
 
-					// const donorPdfBytes = await (await fetch(url, { mode: 'no-cors' })).arrayBuffer();
-					// .then(res => res.arrayBuffer());
+                    const donorPdfBytes = await fetch(url)
+                        .then(res => res.arrayBuffer());
 
-					const donorPdfDoc = await PDFDocument.load(donorPdfBytes);
-					const docLength = donorPdfDoc.getPageCount();
-					for (var k = 0; k < docLength; k++) {
-						const [donorPage] = await pdfDoc.copyPages(donorPdfDoc, [k]);
-						console.log('Doc ' + conta.nCodTitulo + ', page ' + k);
-						pdfDoc.addPage(donorPage);
-					}
-				}
-			}
+                    const donorPdfDoc = await PDFDocument.load(donorPdfBytes);
+                    const docLength = donorPdfDoc.getPageCount();
+                    for (var k = 0; k < docLength; k++) {
+                        const [donorPage] = await pdfDoc.copyPages(donorPdfDoc, [k]);
+                        pdfDoc.addPage(donorPage);
+                    }
+                }
+            }
 
-			const pdfDataUri = await pdfDoc.saveAsBase64({ dataUri: true });
-			console.log(pdfDataUri);
+            const pdfDataUri = await pdfDoc.saveAsBase64({dataUri: true});
 
-			// strip off the first part to the first comma "data:image/png;base64,iVBORw0K..."
-			setPDFURI('data:application/pdf;base64,' + pdfDataUri.substring(pdfDataUri.indexOf(',') + 1));
-		} finally {
-			setLoading({
-				status: false,
-				message: 'Carregar!',
-			});
-		}
-	}
+            // strip off the first part to the first comma "data:image/png;base64,iVBORw0K..."
+            setPDFURI('data:application/pdf;base64,' + pdfDataUri.substring(pdfDataUri.indexOf(',') + 1));
 
-	return (
-		<Fragment>
-			<label>
-				Data Emissao Inicial:
-				<input type='date' value={datade} onChange={handleDataDE} />
-			</label>
+        } finally {
+            setLoading(false);
+        }
+    }
 
-			<label>
-				Data Emissao Final:
-				<input type='date' value={dataate} onChange={handleDataATE} />
-			</label>
+    return (
+        <Fragment>
+            <div>
+                <label>
+                    Data Emissao Inicial:
+                    <input type='date' value={datade} onChange={handleDataDE}/>
+                </label>
 
-			<label>
-				<button disabled={loading.status} onClick={() => carregar()}>{loading.message}</button>
-			</label>
+                <label>
+                    Data Emissao Final:
+                    <input type='date' value={dataate} onChange={handleDataATE}/>
+                </label>
 
-			<label>
-				<button disabled={boletos.length === 0}
-						onClick={() => mergeAllPDFs()}>{(boletos.length !== 0 || !loading) ? 'Lote PDF' : loading.message}</button>
-			</label>
+                <label>
+                    <button disabled={loading}
+                            onClick={() => carregar()}>{loading ? 'Carregando...' : 'Pesquisar'}</button>
+                </label>
 
-			{!pdfuri ? '':
-				<label>
-					<a href={pdfuri} target='_blank' rel="noreferrer">Download</a>
-				</label>
-			}
-			<div className='mx-auto p-2' />
+                {(pdfuri || boletos.length === 0) ? '' :
+                    <label>
+                        <button disabled={loading}
+                                onClick={() => mergeAllPDFs()}>{(loading) ? 'Carregando...' : 'Lote PDF'}</button>
+                    </label>
+                }
 
-			<table className='table'>
-				<thead>
-				<tr>
-					<th scope='col'> CNPJ/CPF</th>
-					<th scope='col'> Numero Pedido</th>
-					<th scope='col'> Numero da Parcela</th>
-					<th scope='col'> Valor</th>
-					<th scope='col'> Codigo de barras</th>
-				</tr>
-				</thead>
-				<tbody>
+                {!pdfuri ? '' :
+                    <label>
+                        <a rel='noreferrer' target="_blank" href={pdfuri}>Download</a>
+                    </label>
+                }
+            </div>
+            <div className='mx-auto p-2'/>
 
-				{
-					(!boletos) ? '' :
-						<Fragment>
-							{
-								boletos.map((item, index) => {
-									return (
-										<tr key={index}>
-											<td>{item.cCPFCNPJCliente}</td>
-											<td>{item.cNumTitulo}</td>
-											<td>
-												{item.cCodigoBarras ?
-													<a href={'/api/urlboleto/' + item.nCodTitulo} target='_blank'
-													   rel='noreferrer'>{item.cNumParcela}</a>
-													: 'N/A'}
-											</td>
-											<td>{item.nValorTitulo}</td>
-											<td>{item.cCodigoBarras}</td>
-										</tr>
-									);
-								})
-							}
-						</Fragment>
-				}
+            <table className='table'>
+                <thead>
+                <tr>
+                    <th scope='col'> CNPJ/CPF</th>
+                    <th scope='col'> Numero Pedido</th>
+                    <th scope='col'> Numero da Parcela</th>
+                    <th scope='col'> Valor</th>
+                    <th scope='col'> Codigo de barras</th>
+                </tr>
+                </thead>
+                <tbody>
 
-				</tbody>
-			</table>
+                {
+                    (!boletos) ? '' :
+                        <Fragment>
+                            {
+                                boletos.map((item, index) => {
+                                    return (
+                                        <tr key={index}>
+                                            <td>{item.cCPFCNPJCliente}</td>
+                                            <td>{item.cNumTitulo}</td>
+                                            <td>
+                                                {item.cCodigoBarras ?
+                                                    <a href={ '/api/urlboleto/' + item.nCodTitulo}
+                                                       target='_blank'
+                                                       rel='noreferrer'>{item.cNumParcela}</a>
+                                                    : 'N/A'}
+                                            </td>
+                                            <td>{item.nValorTitulo}</td>
+                                            <td>{item.cCodigoBarras}</td>
+                                        </tr>
+                                    );
+                                })
+                            }
+                        </Fragment>
+                }
 
-		</Fragment>
-	);
+                </tbody>
+            </table>
+
+        </Fragment>
+    );
 
 }
