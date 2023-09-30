@@ -9,6 +9,7 @@ export default function Documentos() {
     const [datade, setDataDE] = useState(moment().format('YYYY-MM-DD'));
     const [dataate, setDataATE] = useState(moment().format('YYYY-MM-DD'));
     const [pdfuri, setPDFURI] = useState('');
+    const [pdfErro, setPDFErro] = useState('');
     const [loading, setLoading] = useState(false);
 
     function carregar() {
@@ -16,6 +17,7 @@ export default function Documentos() {
             setLoading(true);
             setResposta([]);
             setPDFURI('');
+            setPDFErro('');
             fetch(
                 '/api/listaboletos',
                 {
@@ -52,25 +54,50 @@ export default function Documentos() {
         try {
             setLoading(true);
             setPDFURI('');
+            setPDFErro('');
 
             const pdfDoc = await PDFDocument.create();
 
+            const allPromises = [];
             for (const conta of boletos) {
                 if (conta.cCodigoBarras) {
                     let url = '/api/urlboleto/' + conta.nCodTitulo;
                     // const donorPdfBytes = (await fetch(
                     // 	url)).arrayBuffer()
 
-                    const donorPdfBytes = await fetch(url)
-                        .then(res => res.arrayBuffer());
+                    allPromises.push(
+                        fetch(url)
+                        .then(res => res.arrayBuffer())
+                    );
+                }
+            }
+            await Promise.all(allPromises);
 
-                    const donorPdfDoc = await PDFDocument.load(donorPdfBytes);
-                    const docLength = donorPdfDoc.getPageCount();
-                    for (var k = 0; k < docLength; k++) {
-                        const [donorPage] = await pdfDoc.copyPages(donorPdfDoc, [k]);
-                        pdfDoc.addPage(donorPage);
+            let boletosErros = [];
+            for (const conta of boletos) {
+                if (conta.cCodigoBarras) {
+                    try {
+
+                        let url = '/api/urlboleto/' + conta.nCodTitulo;
+                        // const donorPdfBytes = (await fetch(
+                        // 	url)).arrayBuffer()
+
+                        let donorPdfBytes = await fetch(url)
+                            .then(res => res.arrayBuffer());
+
+                        let donorPdfDoc = await PDFDocument.load(donorPdfBytes);
+                        let docLength = donorPdfDoc.getPageCount();
+                        for (let k = 0; k < docLength; k = k + 1) {
+                            let [donorPage] = await pdfDoc.copyPages(donorPdfDoc, [k]);
+                            pdfDoc.addPage(donorPage);
+                        }
+                    } catch (e) {
+                        boletosErros.push(conta.nCodTitulo);
                     }
                 }
+            }
+            if (boletosErros.length > 0) {
+                setPDFErro('Erro ao gerar os boletos: ' + boletosErros.join(', '));
             }
 
             const pdfDataUri = await pdfDoc.saveAsBase64({dataUri: true});
@@ -116,6 +143,13 @@ export default function Documentos() {
             </div>
             <div className='mx-auto p-2'/>
 
+            {pdfErro? '':
+            <Fragment>
+                <pre>{pdfErro}</pre>
+                <div className='mx-auto p-2'/>
+            </Fragment>
+            }
+
             <table className='table'>
                 <thead>
                 <tr>
@@ -139,7 +173,7 @@ export default function Documentos() {
                                             <td>{item.cNumTitulo}</td>
                                             <td>
                                                 {item.cCodigoBarras ?
-                                                    <a href={ '/api/urlboleto/' + item.nCodTitulo}
+                                                    <a href={'/api/urlboleto/' + item.nCodTitulo}
                                                        target='_blank'
                                                        rel='noreferrer'>{item.cNumParcela}</a>
                                                     : 'N/A'}
