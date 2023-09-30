@@ -36,8 +36,8 @@ export class Apps {
                     },
                 );
 
-            } else if (includes(this.request.url, '/urlboleto')) {
-                return await urlBoleto(this.request.url.split('/').pop());
+            } else if (includes(request.url, '/urlboleto')) {
+                return await urlBoleto(request.url.split('/').pop());
             }
 
         } catch (e) {
@@ -53,7 +53,7 @@ export class Apps {
 
 ```typescript
 
-export async function listaDeBoleto() {
+export async function listaDeBoleto(env : Env) {
     let resposta = [];
 
     try {
@@ -71,8 +71,8 @@ export async function listaDeBoleto() {
                     'app_secret': env.OMIE_APP_SECRET,
                     'param': [
                         {
-                            'dDtIncDe': moment(this.data['datade'], 'YYYY-MM-DD').format('DD/MM/YYYY'),
-                            'dDtIncAte': moment(this.data['dataate'], 'YYYY-MM-DD').format('DD/MM/YYYY'),
+                            'dDtIncDe': moment(data['datade'], 'YYYY-MM-DD').format('DD/MM/YYYY'),
+                            'dDtIncAte': moment(data['dataate'], 'YYYY-MM-DD').format('DD/MM/YYYY'),
                             'cNatureza': 'R',
                             'cTipo': 'BOL',
                             //'cStatus': 'AVENCER',
@@ -90,11 +90,11 @@ export async function listaDeBoleto() {
 
         let boletos = [];
         for (let i = 0; i < resposta['titulosEncontrados'].length; i++) {
-            boletos.push(await this.dtoBoleto(resposta['titulosEncontrados'][i]['cabecTitulo']));
+            boletos.push(await dtoBoleto(resposta['titulosEncontrados'][i]['cabecTitulo']));
         }
         resposta = boletos;
 
-        resposta = resposta.sort(this.sorter);
+        resposta = resposta.sort(sorter);
 
     } catch (e) {
         console.error('Erro ao listar contas a receber', e, e.stack);
@@ -112,7 +112,7 @@ export function stringToSort(entity: any): string {
 }
 
 export function sorter(a: any, b: any): number {
-    return this.stringToSort(a).localeCompare(this.stringToSort(b));
+    return stringToSort(a).localeCompare(stringToSort(b));
 }
 
 export function dtoBoleto(titulo: any) {
